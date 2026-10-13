@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Ticket } from './ticket.interface.js';
 import { CreateTicketDto } from './dto/create-ticket.dto.js';
 import { UpdateTicketDto } from './dto/update-ticket.dto.js';
@@ -70,8 +70,23 @@ export class TicketsService {
 
   update(id: number, updateTicketDto: UpdateTicketDto) {
     const ticket = this.findOne(id);
+    
+    if(ticket.status === 'closed') {
+      throw new BadRequestException(`Cannot update a closed ticket with ID ${id}`);
+    }
 
     Object.assign(ticket, updateTicketDto);
+    return ticket;
+  }
+
+  closeTicket(id: number) { 
+    const ticket = this.findOne(id);
+    
+    if(ticket.status === 'closed') {
+      throw new BadRequestException(`Ticket with ID ${id} is already closed`);
+    }
+
+    ticket.status = 'closed';
     return ticket;
   }
 }
